@@ -125,14 +125,6 @@ namespace OpenMS
       verboseVersion_ +=std::string(", Revision: ") + VersionInfo::getRevision() + "";
     }
 
-    // Independent products publish their own version through their installed manifest.
-    const std::string product_version = ToolHandler::getToolVersion(tool_name_);
-    if (!product_version.empty())
-    {
-      version_ = product_version;
-      verboseVersion_ = product_version + " (OpenMS core " + VersionInfo::getVersion()
-        + ", revision " + VersionInfo::getRevision() + ")";
-    }
 
   }
 
@@ -146,8 +138,17 @@ namespace OpenMS
     }
   }
 
-  TOPPBase::ExitCodes TOPPBase::main(int argc, const char** argv)
+  TOPPBase::ExitCodes TOPPBase::main(int argc, const char** argv) try
   {
+    // Independent products publish their own version through their installed manifest.
+    const std::string product_version = ToolHandler::getToolVersion(tool_name_);
+    if (!product_version.empty())
+    {
+      version_ = product_version;
+      verboseVersion_ = product_version + " (OpenMS core " + VersionInfo::getVersion()
+        + ", revision " + VersionInfo::getRevision() + ")";
+    }
+
     //----------------------------------------------------------
     //parse command line
     //----------------------------------------------------------
@@ -500,6 +501,16 @@ namespace OpenMS
     log_->close();
 
     return result;
+  }
+  catch (const Exception::BaseException& error)
+  {
+    OPENMS_LOG_ERROR << "Unable to initialize or run " << tool_name_ << ": " << error.what() << '\n';
+    return ILLEGAL_PARAMETERS;
+  }
+  catch (const std::exception& error)
+  {
+    OPENMS_LOG_ERROR << "Unable to initialize or run " << tool_name_ << ": " << error.what() << '\n';
+    return INTERNAL_ERROR;
   }
 
 
@@ -2565,11 +2576,8 @@ namespace OpenMS
 
           // fill program category and docurl
           std::string docurl = getDocumentationURL();
-          std::string category;
-          if (official_)
-          { // we can only get the docurl/category from registered/official tools
-            category = ToolHandler::getCategory(tool_name_);
-          }
+          // Installed package metadata also categorizes experimental utilities.
+          const std::string category = ToolHandler::getCategory(tool_name_);
 
           // collect citation information
           std::vector<std::string> citation_dois;

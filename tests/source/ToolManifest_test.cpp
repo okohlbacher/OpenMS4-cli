@@ -7,8 +7,11 @@
 // --------------------------------------------------------------------------
 
 #include <OpenMS/APPLICATIONS/ToolHandler.h>
+#include <OpenMS/APPLICATIONS/TOPPBase.h>
 #include <OpenMS/CONCEPT/ClassTest.h>
 #include <OpenMS/CONCEPT/Exception.h>
+#include <OpenMS/CONCEPT/VersionInfo.h>
+#include <OpenMS/FORMAT/ParamXMLFile.h>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -61,6 +64,16 @@ public:
   fs::path binary(const std::string& name) const
   { return prefix_ / "bin" / name; }
 
+  void include(const RegistryFixture& other) const
+  {
+#ifdef _WIN32
+    constexpr char separator = ';';
+#else
+    constexpr char separator = ':';
+#endif
+    setPrefix_(prefix_.string() + separator + other.prefix_.string());
+  }
+
 private:
   static void setPrefix_(const std::string& value)
   {
@@ -74,6 +87,16 @@ private:
   fs::path prefix_;
   bool had_prefix_ = false;
   std::string previous_prefix_;
+};
+
+class RegistryProbe : public OpenMS::TOPPBase
+{
+public:
+  RegistryProbe() : TOPPBase("__PackageProbe", "Installed registry test", false) {}
+
+private:
+  void registerOptionsAndFlags_() override {}
+  ExitCodes main_(int, const char**) override { return EXECUTION_OK; }
 };
 } // namespace
 
@@ -98,6 +121,27 @@ START_SECTION(manifest parser rejects duplicate and unsafe entries)
 #ifdef _WIN32
   fixture.write("__PackageProbe\tExperimental\t1.0\tC:Probe.exe\n");
   TEST_EXCEPTION(Exception::InvalidValue, ToolHandler::getToolVersion("__PackageProbe"))
+#endif
+}
+END_SECTION
+
+START_SECTION(unreadable registry inputs fail with library exceptions)
+{
+#ifndef _WIN32
+  std::string temporary;
+  NEW_TMP_FILE(temporary)
+  RegistryFixture fixture(temporary);
+  fixture.write("__PackageProbe\tExperimental\t1.0\tbin/Probe\n");
+  const fs::path directory = fs::absolute(temporary) / "share/openms4/tools";
+  const fs::path manifest = directory / "probe.tools.tsv";
+  const auto file_permissions = fs::status(manifest).permissions();
+  fs::permissions(manifest, fs::perms::none);
+  TEST_EXCEPTION(Exception::FileNotReadable, ToolHandler::getToolVersion("__PackageProbe"))
+  fs::permissions(manifest, file_permissions);
+  const auto directory_permissions = fs::status(directory).permissions();
+  fs::permissions(directory, fs::perms::none);
+  TEST_EXCEPTION(Exception::InvalidValue, ToolHandler::getToolVersion("__PackageProbe"))
+  fs::permissions(directory, directory_permissions);
 #endif
 }
 END_SECTION
@@ -147,6 +191,48 @@ START_SECTION(interactive desktop tools remain resolvable without CLI parameter 
   TEST_EQUAL(tools.contains("__PackageCLI"), true)
   TEST_STRING_EQUAL(ToolHandler::getToolVersion("__PackageViewer"), "1.2.3")
   TEST_STRING_EQUAL(ToolHandler::findExecutable("__PackageViewer"), fixture.binary(binary_name).string())
+}
+END_SECTION
+
+START_SECTION(duplicates across prefixes and malformed startup fail predictably)
+{
+  std::string first_directory, second_directory;
+  NEW_TMP_FILE(first_directory)
+  NEW_TMP_FILE(second_directory)
+  RegistryFixture first(first_directory), second(second_directory);
+  first.write("__PackageProbe\tExperimental\t1.0\tbin/Probe\n");
+  second.write("__PackageProbe\tExperimental\t2.0\tbin/Probe\n");
+  first.include(second);
+  TEST_EXCEPTION(Exception::InvalidValue, ToolHandler::getToolVersion("__PackageProbe"))
+  // Construction must not read corrupt registries outside the executable boundary.
+  RegistryProbe tool;
+  const char* arguments[] = {"__PackageProbe", "-help"};
+  TEST_EQUAL(tool.main(2, arguments), TOPPBase::ILLEGAL_PARAMETERS)
+}
+END_SECTION
+
+START_SECTION(product version is written to INI with a core-version fallback)
+{
+  std::string temporary, output;
+  NEW_TMP_FILE(temporary)
+  NEW_TMP_FILE(output)
+  RegistryFixture fixture(temporary);
+  fixture.write("__PackageProbe\tExperimental\t7.8.9\tbin/Probe\n");
+  const char* arguments[] = {"__PackageProbe", "-write_ini", output.c_str()};
+  {
+    RegistryProbe tool;
+    TEST_EQUAL(tool.main(3, arguments), TOPPBase::EXECUTION_OK)
+  }
+  Param parameters;
+  ParamXMLFile().load(output, parameters);
+  TEST_STRING_EQUAL(parameters.getValue("__PackageProbe:version").toString(), "7.8.9")
+  fixture.write("# no registered product\n");
+  {
+    RegistryProbe tool;
+    TEST_EQUAL(tool.main(3, arguments), TOPPBase::EXECUTION_OK)
+  }
+  ParamXMLFile().load(output, parameters);
+  TEST_STRING_EQUAL(parameters.getValue("__PackageProbe:version").toString(), VersionInfo::getVersion())
 }
 END_SECTION
 

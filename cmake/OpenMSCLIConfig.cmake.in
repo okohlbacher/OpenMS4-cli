@@ -8,3 +8,5 @@ set(OpenMSCLI_VERSION "@OpenMSCLI_VERSION@")
 set(OpenMSCLI_SOURCE_REVISION "@OpenMSCLI_SOURCE_REVISION@")
 include("${CMAKE_CURRENT_LIST_DIR}/OpenMSCLITargets.cmake")
 check_required_components(OpenMSCLI)
+
+set(OpenMSCLI_SOURCE_DIRTY "@OpenMSCLI_SOURCE_DIRTY@")

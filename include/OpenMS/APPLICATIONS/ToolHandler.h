@@ -83,14 +83,6 @@ private:
     /// Enumerate @c .ttd config file paths under @ref getInternalToolsPath (and its OS-specific subdir)
     static StringList getInternalToolConfigFiles_();
 
-    /// Parse the @c .ttd config files (idempotent — sets @c tools_internal_loaded_ on success)
-    static void loadInternalToolConfig_();
-
-    /// Cached internal tool registry; populated lazily by @ref loadInternalToolConfig_
-    static std::vector<Internal::ToolDescription> tools_internal_;
-
-    /// Whether @c tools_internal_ has been initialised this run
-    static bool tools_internal_loaded_;
   };
 
 } // namespace OpenMS

@@ -51,7 +51,7 @@ std::vector<fs::path> prefixes()
       if (! item.empty()) { result.emplace_back(item); }
     }
   }
-  const fs::path executable_directory = fs::path(OpenMS::File::getExecutablePath()) / ".";
+  const fs::path executable_directory = fs::u8path(OpenMS::File::getExecutablePath()) / ".";
   result.emplace_back((executable_directory / "..").lexically_normal());
 #ifdef __APPLE__
   // A desktop bundle executable lives at <prefix>/bin/App.app/Contents/MacOS.
@@ -84,7 +84,7 @@ std::vector<fs::path> prefixes()
   return result;
 }
 
-std::map<std::string, PackageTool> packageTools()
+std::map<std::string, PackageTool> packageTools() try
 {
   std::map<std::string, PackageTool> result;
   std::set<fs::path> seen;
@@ -92,12 +92,21 @@ std::map<std::string, PackageTool> packageTools()
   {
     const auto directory = prefix / "share/openms4/tools";
     std::error_code ec;
-    if (! fs::is_directory(directory, ec)) { continue; }
+    const bool exists = fs::is_directory(directory, ec);
+    if (ec && ec != std::errc::no_such_file_or_directory)
+    {
+      throw fs::filesystem_error("Cannot inspect tool manifest directory", directory, ec);
+    }
+    if (!exists) { continue; }
     for (const auto& entry : fs::directory_iterator(directory))
     {
       if (entry.path().extension() != ".tsv" || ! entry.is_regular_file()) { continue; }
       if (! seen.insert(fs::weakly_canonical(entry.path())).second) { continue; }
       std::ifstream input(entry.path());
+      if (!input)
+      {
+        throw OpenMS::Exception::FileNotReadable(__FILE__, __LINE__, OPENMS_PRETTY_FUNCTION, entry.path().string());
+      }
       for (std::string line; std::getline(input, line);)
       {
         if (! line.empty() && line.back() == '\r') { line.pop_back(); }
@@ -124,9 +133,18 @@ std::map<std::string, PackageTool> packageTools()
         }
         if (! result.emplace(values[0], PackageTool {values[1], values[2], fs::absolute(prefix / relative)}).second) { fail(); }
       }
+      if (input.bad())
+      {
+        throw OpenMS::Exception::FileNotReadable(__FILE__, __LINE__, OPENMS_PRETTY_FUNCTION, entry.path().string());
+      }
     }
   }
   return result;
+}
+catch (const fs::filesystem_error& error)
+{
+  throw OpenMS::Exception::InvalidValue(__FILE__, __LINE__, OPENMS_PRETTY_FUNCTION,
+                                        "Cannot read tool package registry", error.what());
 }
 } // namespace
 
@@ -166,7 +184,7 @@ std::string ToolHandler::getToolVersion(const std::string& toolname)
   return it == tools.end() ? std::string() : it->second.version;
 }
 
-std::string ToolHandler::findExecutable(const std::string& toolname)
+std::string ToolHandler::findExecutable(const std::string& toolname) try
 {
   const auto tools = packageTools();
   const auto it = tools.find(toolname);
@@ -184,6 +202,10 @@ std::string ToolHandler::findExecutable(const std::string& toolname)
   if (File::findExecutable(candidate) && fs::is_regular_file(candidate) && File::executable(candidate)) { return fs::absolute(candidate).string(); }
   throw Exception::FileNotFound(__FILE__, __LINE__, OPENMS_PRETTY_FUNCTION, toolname);
 }
+catch (const fs::filesystem_error& error)
+{
+  throw Exception::FileNotFound(__FILE__, __LINE__, OPENMS_PRETTY_FUNCTION, error.what());
+}
 
 StringList ToolHandler::getTypes(const std::string& toolname)
 {
@@ -195,32 +217,23 @@ StringList ToolHandler::getTypes(const std::string& toolname)
 
 std::vector<Internal::ToolDescription> ToolHandler::getInternalTools_()
 {
-  if (! tools_internal_loaded_)
-  {
-    loadInternalToolConfig_();
-    tools_internal_loaded_ = true;
-  }
-  return tools_internal_;
+  // Successful first discovery is cached; failed initialization can be retried.
+  static const std::vector<Internal::ToolDescription> tools = [] {
+    std::vector<Internal::ToolDescription> result;
+    for (const auto& file : getInternalToolConfigFiles_())
+    {
+      ToolDescriptionFile reader;
+      std::vector<Internal::ToolDescription> entries;
+      reader.load(file, entries);
+      result.insert(result.end(), entries.begin(), entries.end());
+    }
+    return result;
+  }();
+  return tools;
 }
 
 std::string ToolHandler::getInternalToolsPath()
 { return File::getOpenMSDataPath() + "/TOOLS/INTERNAL"; }
-
-void ToolHandler::loadInternalToolConfig_()
-{
-  StringList files = getInternalToolConfigFiles_();
-  for (size_t i = 0; i < files.size(); ++i)
-  {
-    ToolDescriptionFile tdf;
-    std::vector<Internal::ToolDescription> tools;
-    tdf.load(files[i], tools);
-    // add every tool from file to list
-    for (Size i_t = 0; i_t < tools.size(); ++i_t)
-    {
-      tools_internal_.push_back(tools[i_t]);
-    }
-  }
-}
 
 StringList ToolHandler::getInternalToolConfigFiles_()
 {
@@ -254,9 +267,5 @@ std::string ToolHandler::getCategory(const std::string& toolname)
 
   return s;
 }
-
-// static
-std::vector<Internal::ToolDescription> ToolHandler::tools_internal_;
-bool ToolHandler::tools_internal_loaded_ = false;
 
 } // namespace OpenMS
