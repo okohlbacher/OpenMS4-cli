@@ -1,0 +1,182 @@
+{
+  "upstream": "https://github.com/OpenMS/OpenMS",
+  "commit": "ca32296038839459d8c9b075b759e285913d6294",
+  "package": "cli",
+  "imported_files": [
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/INIUpdater.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/INIUpdater.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/MapAlignerBase.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/MapAlignerBase.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/ParameterInformation.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/ParameterInformation.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/SearchEngineBase.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/SearchEngineBase.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/TOPPBase.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/TOPPBase.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/TOPPBase_defs.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/TOPPBase_defs.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/TOPPExternalToolBase.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/TOPPExternalToolBase.h"
+    },
+    {
+      "upstream": "src/openms/include/OpenMS/APPLICATIONS/ToolHandler.h",
+      "package": "cli",
+      "path": "include/OpenMS/APPLICATIONS/ToolHandler.h"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/INIUpdater.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/INIUpdater.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/MapAlignerBase.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/MapAlignerBase.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/ParameterInformation.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/ParameterInformation.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/SearchEngineBase.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/SearchEngineBase.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/TOPPBase.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/TOPPBase.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/TOPPExternalToolBase.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/TOPPExternalToolBase.cpp"
+    },
+    {
+      "upstream": "src/openms/source/APPLICATIONS/ToolHandler.cpp",
+      "package": "cli",
+      "path": "source/APPLICATIONS/ToolHandler.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/INIUpdater_test.cpp",
+      "package": "cli",
+      "path": "tests/source/INIUpdater_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/MapAlignerBase_test.cpp",
+      "package": "cli",
+      "path": "tests/source/MapAlignerBase_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/ParameterInformation_test.cpp",
+      "package": "cli",
+      "path": "tests/source/ParameterInformation_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/SearchEngineBase_test.cpp",
+      "package": "cli",
+      "path": "tests/source/SearchEngineBase_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/TOPPBase_test.cpp",
+      "package": "cli",
+      "path": "tests/source/TOPPBase_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/TOPPExternalToolBase_test.cpp",
+      "package": "cli",
+      "path": "tests/source/TOPPExternalToolBase_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/source/ToolHandler_test.cpp",
+      "package": "cli",
+      "path": "tests/source/ToolHandler_test.cpp"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBase_empty.txt",
+      "package": "cli",
+      "path": "tests/data/TOPPBase_empty.txt"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBase_common.ini",
+      "package": "cli",
+      "path": "tests/data/TOPPBase_common.ini"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBase_test_write_ini_subsec_out.ini",
+      "package": "cli",
+      "path": "tests/data/TOPPBase_test_write_ini_subsec_out.ini"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBase_toolcommon.ini",
+      "package": "cli",
+      "path": "tests/data/TOPPBase_toolcommon.ini"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBaseCmdParseSubsectionsTest.ini",
+      "package": "cli",
+      "path": "tests/data/TOPPBaseCmdParseSubsectionsTest.ini"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/TOPPBase_test_write_ini_out.ini",
+      "package": "cli",
+      "path": "tests/data/TOPPBase_test_write_ini_out.ini"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/degenerate_cases/empty.fasta",
+      "package": "cli",
+      "path": "tests/data/degenerate_cases/empty.fasta"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/degenerate_cases/empty_spec.mzML",
+      "package": "cli",
+      "path": "tests/data/degenerate_cases/empty_spec.mzML"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/data/Single_MS2_profileMode.mzML",
+      "package": "cli",
+      "path": "tests/data/Single_MS2_profileMode.mzML"
+    },
+    {
+      "upstream": "src/tests/class_tests/openms/include/OpenMS/test_config.h.in",
+      "package": "cli",
+      "path": "tests/test_config.h.in"
+    },
+    {
+      "upstream": "License.txt",
+      "package": "cli",
+      "path": "License.txt"
+    },
+    {
+      "upstream": "AUTHORS",
+      "package": "cli",
+      "path": "AUTHORS"
+    },
+    {
+      "upstream": ".clang-format",
+      "package": "cli",
+      "path": ".clang-format"
+    }
+  ]
+}

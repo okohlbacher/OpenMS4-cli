@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "dependencies": {
+    "OpenMS": {
+      "version": "4.0.0",
+      "source_revision": "7c029e8cdba6abab503708ecdd56f6ab55e38ce4",
+      "repository": "https://github.com/okohlbacher/OpenMS4-core"
+    }
+  },
+  "binary_artifacts": "Not built; exact source pins are not a binary ABI guarantee."
+}
