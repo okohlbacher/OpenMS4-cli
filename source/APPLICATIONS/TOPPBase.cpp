@@ -478,6 +478,15 @@ namespace OpenMS
       writeDebug_(std::string("Error occurred in line ") + e.getLine() + " of file " + e.getFile() + " (in function: " + e.getFunction() + ") !", 1);
       return ILLEGAL_PARAMETERS;
     }
+    catch (IllegalArgument& e)
+    {
+      // Thrown where the input does not match what the selected options require, e.g. profile
+      // spectra handed to an algorithm that needs centroided ones. That is the caller's to
+      // fix, so it must not be reported as an unexpected internal error.
+      writeLogError_(std::string("Error: Invalid input for the given parameters: ") + e.what());
+      writeDebug_(std::string("Error occurred in line ") + e.getLine() + " of file " + e.getFile() + " (in function: " + e.getFunction() + ") !", 1);
+      return ILLEGAL_PARAMETERS;
+    }
     // Internal errors because of wrong use of this class
     catch (UnregisteredParameter& e)
     {
