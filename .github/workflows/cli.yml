@@ -62,8 +62,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p "${{ runner.temp }}/core"
-          gh release download core-v4.0.0-ci.1 --repo okohlbacher/OpenMS4-core \
-            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-94a2b114939e.tar.gz*" \
+          gh release download core-v4.0.0-ci.2 --repo okohlbacher/OpenMS4-core \
+            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-bc9cc12514c7.tar.gz*" \
             --dir "${{ runner.temp }}/core"
           cd "${{ runner.temp }}/core"
           if command -v shasum >/dev/null; then

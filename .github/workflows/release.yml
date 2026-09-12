@@ -39,4 +39,4 @@ jobs:
           gh release create "${{ github.ref_name }}" \
             ./artifacts/cli-*/* \
             --verify-tag --prerelease --title "CLI ${{ github.ref_name }}" \
-            --notes "Tested packages for Linux x64/arm64, macOS x64/arm64 and Windows x64, Each archive installs the OpenMS::CLI target that every console product links, and requires the pinned openms4-core SDK."
+            --notes "Each archive installs the OpenMS::CLI target that every console product links, and requires the pinned openms4-core SDK."
