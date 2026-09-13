@@ -22,14 +22,20 @@ jobs:
         run: |
           set -euo pipefail
           revision=$(git rev-parse HEAD)
-          run_id=$(gh run list --workflow cli.yml --commit "$revision" --event push \
-            --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          # Ask the API directly: 'gh run list --status success' on the runner image does not
+          # match a run whose first attempt failed, which would refuse a release whose CI is green.
+          run_id=$(gh api \
+            "repos/${{ github.repository }}/actions/workflows/cli.yml/runs?head_sha=$revision&event=push&status=success&per_page=1" \
+            --jq '.workflow_runs[0].id // empty')
           if [ -z "$run_id" ]; then
             echo "::error::No successful branch CI run exists for $revision"
             exit 1
           fi
           gh run download "$run_id" --pattern 'cli-*' --dir artifacts
-          test "$(find artifacts -name '*.sha256' | wc -l)" -eq 5
+          # One package archive per platform; pyOpenMS adds a repaired wheel beside it, so
+          # count the archives and verify every checksum the artifacts carry.
+          test "$(find artifacts -name '*.tar.gz' | wc -l)" -eq 5
+          test "$(find artifacts -name '*.sha256' | wc -l)" -ge 5
           find artifacts -name '*.sha256' -print0 | while IFS= read -r -d '' checksum; do
             sed -i 's/\r$//' "$checksum"
             (cd "$(dirname "$checksum")" && shasum -a 256 -c "$(basename "$checksum")")

@@ -12,12 +12,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   native:
     name: ${{ matrix.platform }} / Release
-    # Pushes and dispatches build Linux x64 on the dax runner and macOS arm64 on the
-    # Mac Studio; pull requests from forks must never run there, so they stay hosted.
-    runs-on: ${{ (github.event_name != 'pull_request' && matrix.platform == 'linux-x64' && 'dax-linux-x64') || (github.event_name != 'pull_request' && matrix.platform == 'macos-arm64' && 'studio-macos-arm64') || matrix.runner }}
+    # Existing packages use registered private runners for trusted builds.
+    # Fork PRs and new packages without registered runners use hosted machines.
+    runs-on: ${{ (github.event_name != 'pull_request' && matrix.pool) || matrix.runner }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -25,22 +29,27 @@ jobs:
         include:
           - platform: linux-x64
             runner: ubuntu-24.04
+            pool: dax-linux-x64
             packages: gcc_linux-64=14 gxx_linux-64=14 coin-or-cbc=2.10.*
             jobs: 4
           - platform: linux-arm64
             runner: ubuntu-24.04-arm
+            pool: ''
             packages: gcc_linux-aarch64=14 gxx_linux-aarch64=14 coin-or-cbc=2.10.*
             jobs: 4
           - platform: macos-arm64
             runner: macos-15
+            pool: studio-macos-arm64
             packages: llvm-openmp coin-or-cbc=2.10.*
             jobs: 2
           - platform: macos-x64
             runner: macos-15-intel
+            pool: ''
             packages: llvm-openmp coin-or-cbc=2.10.*
             jobs: 4
           - platform: windows-x64
             runner: windows-2022
+            pool: flashbox-windows-x64
             packages: glpk=5.*
             jobs: 4
     env:
@@ -60,12 +69,13 @@ jobs:
           generate-run-shell: false
           cache-environment: true
           cache-environment-key: cli-${{ matrix.platform }}
-      - name: Download and verify the pinned Core SDK
+          post-cleanup: all
+      - name: Download and verify the pinned core SDK
         shell: bash
         run: |
           mkdir -p "${{ runner.temp }}/core"
-          gh release download core-v4.0.0-ci.2 --repo okohlbacher/OpenMS4-core \
-            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-bc9cc12514c7.tar.gz*" \
+          gh release download core-v4.0.0-ci.3 --repo okohlbacher/OpenMS4-core \
+            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-c77ff14b4521.tar.gz*" \
             --dir "${{ runner.temp }}/core"
           cd "${{ runner.temp }}/core"
           if command -v shasum >/dev/null; then
@@ -77,7 +87,7 @@ jobs:
       - name: Build, test, install, and package
         run: >-
           micromamba run -n package-ci python tools/ci/run.py
-          --platform ${{ matrix.platform }} --jobs ${{ (startsWith(runner.name, 'dax') && 24) || (startsWith(runner.name, 'studio') && 8) || matrix.jobs }}
+          --platform ${{ matrix.platform }} --jobs ${{ (startsWith(runner.name, 'dax') && 24) || (startsWith(runner.name, 'studio') && 8) || (startsWith(runner.name, 'DESKTOP') && 8) || matrix.jobs }}
           --core-dir "${{ runner.temp }}/core"
           --work-dir "${{ runner.temp }}/cli"
       - name: Upload tested package
