@@ -106,8 +106,9 @@ START_SECTION(std::string getRawfileName(int ms_level = 2) const;)
     SearchEngineBaseTest instance;
     args = { { "main.exe", "-in", infile_empty, "-database", db } };
     // run it
-    // --> fails, since the experiment does not contain centroided spectra (only one 'UNKNOWN')
-    TEST_EQUAL(TOPPBase::ExitCodes::UNKNOWN_ERROR == instance.main(args.size(), toArgV(args).data()), true);
+    // --> fails, since the experiment does not contain centroided spectra (only one 'UNKNOWN');
+    //     that is the caller's input to fix, so it is reported as an illegal parameter
+    TEST_EQUAL(instance.main(args.size(), toArgV(args).data()), TOPPBase::ExitCodes::ILLEGAL_PARAMETERS);
   }
   {
     SearchEngineBaseTest instance;
@@ -124,8 +125,8 @@ START_SECTION(std::string getRawfileName(int ms_level = 2) const;)
     SearchEngineBaseTest instance;
     args = { { "main.exe", "-in", infile_profile, "-database", db } };
     // run it
-    // --> fails, since the experiment contains a spectrum of type 'PROFILE'
-    TEST_EQUAL(TOPPBase::ExitCodes::UNKNOWN_ERROR == instance.main(args.size(), toArgV(args).data()), true);
+    // --> fails, since the experiment contains a spectrum of type 'PROFILE' (the caller's input to fix)
+    TEST_EQUAL(instance.main(args.size(), toArgV(args).data()), TOPPBase::ExitCodes::ILLEGAL_PARAMETERS);
   }
   {
     SearchEngineBaseTest instance;
