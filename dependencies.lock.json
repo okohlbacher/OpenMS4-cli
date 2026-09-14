@@ -3,7 +3,7 @@
   "dependencies": {
     "OpenMS": {
       "version": "4.0.0",
-      "source_revision": "c77ff14b45212ca9014f8c6869b2bf51336a6355",
+      "source_revision": "4f5c86fd90f385d950176b8a48bdb90665735c27",
       "repository": "https://github.com/okohlbacher/OpenMS4-core"
     }
   },

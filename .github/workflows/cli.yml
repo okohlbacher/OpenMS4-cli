@@ -56,6 +56,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       PYTHONUTF8: '1'
       OMP_NUM_THREADS: '1'
+      # Parallel launches of freshly built binaries stall ~25 s on the Mac Studio runner (in
+      # syspolicyd); serial launches do not. The drivers run ctest serially when this is 1.
+      OPENMS4_SERIAL_TESTS: ${{ startsWith(runner.name, 'studio-') && '1' || '0' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -74,8 +77,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p "${{ runner.temp }}/core"
-          gh release download core-v4.0.0-ci.3 --repo okohlbacher/OpenMS4-core \
-            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-c77ff14b4521.tar.gz*" \
+          gh release download core-v4.0.0-ci.4 --repo okohlbacher/OpenMS4-core \
+            --pattern "OpenMS4-core-${{ matrix.platform }}-Release-4f5c86fd90f3.tar.gz*" \
             --dir "${{ runner.temp }}/core"
           cd "${{ runner.temp }}/core"
           if command -v shasum >/dev/null; then
