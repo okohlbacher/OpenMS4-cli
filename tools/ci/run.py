@@ -56,6 +56,9 @@ def main() -> None:
     parser.add_argument("--work-dir", required=True, type=Path)
     parser.add_argument("--jobs", type=int, default=2)
     args = parser.parse_args()
+    # Parallel launches of freshly built binaries stall ~25 s on the Mac Studio runner (in
+    # syspolicyd); serial launches do not, so its workflow asks for serial tests. Builds stay parallel.
+    test_jobs = "1" if os.environ.get("OPENMS4_SERIAL_TESTS") == "1" else str(args.jobs)
     source = Path(__file__).resolve().parents[2]
     work = args.work_dir.resolve()
     if args.jobs < 1 or (work.exists() and any(work.iterdir())):
@@ -114,7 +117,7 @@ def main() -> None:
     run("build", ["cmake", "--build", str(build), "--config", configuration,
                   "--parallel", str(args.jobs)])
     run("test", ["ctest", "--test-dir", str(build), "-C", configuration,
-                 "--output-on-failure", "--no-tests=error", "--parallel", str(args.jobs)])
+                 "--output-on-failure", "--no-tests=error", "--parallel", test_jobs])
     run("install", ["cmake", "--install", str(build), "--config", configuration])
     check_install(install)
     revision = subprocess.check_output(
