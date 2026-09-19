@@ -10,6 +10,7 @@
 #include <OpenMS/CONCEPT/Exception.h>
 #include <OpenMS/FORMAT/ToolDescriptionFile.h>
 #include <OpenMS/SYSTEM/File.h>
+#include <OpenMS/SYSTEM/PathUtils.h>
 #include <algorithm>
 #include <cstdlib>
 #include <filesystem>
@@ -51,7 +52,7 @@ std::vector<fs::path> prefixes()
       if (! item.empty()) { result.emplace_back(item); }
     }
   }
-  const fs::path executable_directory = fs::u8path(OpenMS::File::getExecutablePath()) / ".";
+  const fs::path executable_directory = OpenMS::to_path(OpenMS::File::getExecutablePath()) / ".";
   result.emplace_back((executable_directory / "..").lexically_normal());
 #ifdef __APPLE__
   // A desktop bundle executable lives at <prefix>/bin/App.app/Contents/MacOS.
