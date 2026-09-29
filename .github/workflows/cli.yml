@@ -39,7 +39,7 @@ jobs:
             jobs: 4
           - platform: macos-arm64
             runner: macos-15
-            pool: studio-macos-arm64
+            pool: ''
             packages: llvm-openmp coin-or-cbc=2.10.*
             jobs: 2
           - platform: macos-x64
